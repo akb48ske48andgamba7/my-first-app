@@ -22,6 +22,15 @@ builder.Services.AddSingleton(FirestoreDb.Create("kains-first-project"));
 
 var app = builder.Build();
 
+// 静的ファイル配信の設定（React画面の配信用）
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+// 既存のルーティング・API設定...
+
+// ルーティングに一致しないパスはすべて index.html へフォールバック
+app.MapFallbackToFile("index.html");
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
