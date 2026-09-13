@@ -1,0 +1,13 @@
+# Node / React
+node_modules/
+dist/
+.env.local
+
+# .NET / C#
+bin/
+obj/
+*.user
+
+# 設定・キャッシュ
+.vscode/
+.antigravity/
