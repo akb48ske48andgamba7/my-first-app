@@ -7,7 +7,7 @@ interface ScoreEntry {
   score: number
 }
 
-const API_BASE_URL = 'http://localhost:5012'
+const API_BASE_URL = ''
 const GAME_DURATION = 10 // 10秒間
 
 export default function App() {

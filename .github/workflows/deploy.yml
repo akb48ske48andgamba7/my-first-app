@@ -1,0 +1,48 @@
+name: Build and Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. GitHub上の仮想マシンにコードをチェックアウト（取得）
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. 事前に登録した秘密鍵（GCP_SA_KEY）を使ってGoogle Cloudへ認証
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # 3. Google Cloud コマンド（gcloud）を使えるようにセットアップ
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # 4. Artifact Registry にDockerコンテナを保存するための認証を通す
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+
+      # 5. Dockerfile を使ってコンテナをビルドし、Artifact Registry へアップロード
+      - name: Build and Push Container Image
+        run: |
+          IMAGE_TAG="asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/app-repo/my-first-app:${{ github.sha }}"
+          docker build -t $IMAGE_TAG .
+          docker push $IMAGE_TAG
+
+      # 6. 保存したコンテナイメージを Google Cloud Run にデプロイして一般公開
+      - name: Deploy to Cloud Run
+        run: |
+          IMAGE_TAG="asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/app-repo/my-first-app:${{ github.sha }}"
+          gcloud run deploy my-first-app \
+            --image $IMAGE_TAG \
+            --region asia-northeast1 \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8080
